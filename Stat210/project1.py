@@ -18,6 +18,8 @@ digits = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 benford_probs = [len(data["HR"])*math.log10(1 + 1 / digit) for digit in digits]
 fig = plt.bar(digits, leading_digit_quantities,)
 plt.plot(digits, benford_probs, color='red', marker='o',)
-plt.xlabel("Leading digit of home run count from 2015-2025")
+plt.xlabel("Leading digit")
 plt.ylabel("Frequency")
+plt.title("Leading digit of home run counts from qualified MLB hitters, 2015-2025")
 plt.savefig("distribution.png")
+
