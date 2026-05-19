@@ -42,7 +42,7 @@ void run_sim(size_t num_trials, size_t seq_len, uint64_t streak_len, double succ
         int num_streaks = 0;
         int successes_after_streak = 0;
 
-        for (int shift = 0; shift <= seq_len - (streak_len - 1); ) {
+        for (int shift = 0; shift <= seq_len - (streak_len + 1); ) {
             uint64_t window = (sequence >> shift) & full_window_mask;
 
             if ((window & streak_mask) == streak_mask) {
