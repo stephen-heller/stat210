@@ -11,15 +11,16 @@ import os
 import matplotlib.pyplot as plt
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-library_path = os.path.join(script_dir, "math_backend.so") # mac/linux
+library_path = os.path.join(script_dir, "compute.so") # mac/linux
 backend = ctypes.CDLL(library_path)
 
 # configure function
 backend.run_sim.argtypes = [
     ctypes.c_size_t, 
     ctypes.c_size_t,
+    ctypes.c_uint64,
     ctypes.c_double,
-    ctypes.g_double_p,
+    ctypes.POINTER(ctypes.c_double)
 
 ]
 backend.run_sim.restype = None #in-place array operation
@@ -30,6 +31,8 @@ def main():
     if seq_len > 64:
         raise ValueError("64 bit implementation can only do sequences up to length 64\n")
     success_rate = float(input("What should the success rate be? Enter a number from 0 to 100\n"))
+
+    streak_len = int(input("What should the streak length be?\n"))
     
     print(f"Running simulation of {num_trials} trials...")
 
@@ -38,14 +41,14 @@ def main():
     output_buffer = c_double_array()
 
     # Call C backend
-    backend.run_sim(num_trials, seq_len, success_rate, output_buffer)
+    backend.run_sim(num_trials, seq_len, streak_len, success_rate, output_buffer)
 
     # Convert array to list
     raw_results = list(output_buffer)
 
     # Filter out games with 0 streaks
     valid_results = [r for r in raw_results if r != -1.0]
-    
+
     print(f"Simulation done")
 
     # Data analysis
@@ -64,10 +67,10 @@ def main():
     plt.hist(valid_results, bins=30, alpha=0.7, color='blue')
     
     # Add a line showing the baseline shooter capability
-    plt.axvline(0.44, color='red', linestyle='dashed', linewidth=2, label='Base Shooter Accuracy (44%)')
+    plt.axvline(success_rate / 100, color='red', linestyle='dashed', linewidth=2, label=f'Base Shooter Accuracy ({success_rate}%)')
     plt.axvline(avg_probability, color='green', linestyle='dotted', linewidth=2, label=f'Observed Mean ({avg_probability:.4f})')
     
-    plt.title(f"Distribution of Success Rates After a 3-Hit Streak\n({len(valid_results):,} Independent 50-Shot Games)")
+    plt.title(f"Distribution of Success Rates After a {streak_len}-Hit Streak\n({len(valid_results):,} Independent 50-Shot Games)")
     plt.xlabel("Probability of Success on Next Shot")
     plt.ylabel("Number of Games")
     plt.legend()

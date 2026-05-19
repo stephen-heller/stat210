@@ -28,13 +28,13 @@ uint64_t generate_sequence(size_t seq_len, double success_rate) {
  * The average success rate after a streak each as a number between 0 and 1, or as -1 if no streaks occur
  * during that trial.
  */
-void run_sim(size_t num_trials, size_t seq_len, double success_rate, double* output_results) {
+void run_sim(size_t num_trials, size_t seq_len, uint64_t streak_len, double success_rate, double* output_results) {
 
     srand(time(NULL));
 
-    uint64_t streak_mask = (1ULL << 3) - 1; // 0b111
-    uint64_t full_window_mask = (1ULL << 4) - 1; // 0b1111
-    uint64_t success_pattern = (1ULL << 3) | streak_mask;
+    uint64_t streak_mask = (1ULL << streak_len) - 1; // 0b111
+    uint64_t full_window_mask = (1ULL << (streak_len + 1)) - 1; // 0b1111
+    uint64_t success_pattern = (1ULL << streak_len) | streak_mask;
 
     for (size_t i = 0; i < num_trials; i++) {
         uint64_t sequence = generate_sequence(seq_len, success_rate);
@@ -42,14 +42,18 @@ void run_sim(size_t num_trials, size_t seq_len, double success_rate, double* out
         int num_streaks = 0;
         int successes_after_streak = 0;
 
-        for (int shift = 0; shift <= 50 - 4; shift++) {
-            uint64_t window = (num_streaks >> shift) & full_window_mask;
+        for (int shift = 0; shift <= seq_len - (streak_len - 1); ) {
+            uint64_t window = (sequence >> shift) & full_window_mask;
 
             if ((window & streak_mask) == streak_mask) {
                 num_streaks++;
                 if (window == success_pattern) {
                     successes_after_streak++;
                 }
+                shift += (streak_len + 1);
+            }
+            else {
+                shift++;
             }
         }
 
