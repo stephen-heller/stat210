@@ -63,7 +63,7 @@ def main():
 
     #median and quartiles
 
-    median_val = statistics.media1000n(valid_results)
+    median_val = statistics.median(valid_results)
     q1, _, q3 = statistics.quantiles(valid_results, n=4)
     print(f"Q1 (25th Percentile): {q1:.4f}")
     print(f"Median:               {median_val:.4f}")
