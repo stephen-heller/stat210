@@ -9,9 +9,11 @@ Test of "hot hand fallacy" via monte carlo simulation
 import ctypes
 import os
 import matplotlib.pyplot as plt
+import time
+import statistics
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-library_path = os.path.join(script_dir, "compute.so") # mac/linux
+library_path = os.path.join(script_dir, "compute.so") # mac/linux--recompile and use .dll for windows
 backend = ctypes.CDLL(library_path)
 
 # configure function
@@ -26,6 +28,7 @@ backend.run_sim.argtypes = [
 backend.run_sim.restype = None #in-place array operation
 
 def main():
+
     num_trials = int(input("How many trials would you like to run?\n"))
     seq_len = int(input("How long should each sequence be (up to 64)\n"))
     if seq_len > 64:
@@ -35,6 +38,8 @@ def main():
     streak_len = int(input("What should the streak length be?\n"))
     
     print(f"Running simulation of {num_trials} trials...")
+
+    start = time.perf_counter()
 
     # Allocate a double array to take results
     c_double_array = ctypes.c_double * num_trials
@@ -55,11 +60,22 @@ def main():
     avg_probability = sum(valid_results) / len(valid_results)
     print(f"\n\n\n Summary ")
     print(f"Probability of success after a streak: {avg_probability:.4f}")
+
+    #median and quartiles
+
+    median_val = statistics.media1000n(valid_results)
+    q1, _, q3 = statistics.quantiles(valid_results, n=4)
+    print(f"Q1 (25th Percentile): {q1:.4f}")
+    print(f"Median:               {median_val:.4f}")
+    print(f"Q3 (75th Percentile): {q3:.4f}")
     
     #variance/stddev
     variance = sum((x - avg_probability) ** 2 for x in valid_results) / len(valid_results)
     std_dev = variance ** 0.5
     print(f"Standard Deviation: {std_dev:.4f}")
+
+    end = time.perf_counter()
+    print(f"Time for sim: {end - start:.2f} seconds")
 
     # histogram
     plt.figure(figsize=(10, 6))
@@ -78,6 +94,8 @@ def main():
     
     print("\nDisplaying histogram plot...")
     plt.show()
+
+    
 
 if __name__ == "__main__":
     main()
