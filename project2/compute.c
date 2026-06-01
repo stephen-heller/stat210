@@ -50,8 +50,8 @@ void run_sim(size_t num_trials, size_t seq_len, uint64_t streak_len, double succ
                 if (window == success_pattern) {
                     successes_after_streak++;
                 }
-                //shift++;
-                shift += (streak_len + 1);
+                shift++;
+                //shift += (streak_len + 1);
             }
             else {
                 shift++;
